@@ -1,0 +1,68 @@
+
+=== 1-2. Quotes (counter must stay 0) ===
+Quote car 3 days  : 1,600  (expected 1,600)
+Quote bike 2 days : 400  (expected 400)
+Counter: 0
+
+=== 3. Rent car 3 days, discount 100 (4-arg overload) ===
+#1 | C1/Amina | CAR-01 | 3d | subtotal 1,600 - discount 100 = total 1,500 EGP | Active
+Counter: 1
+
+=== 4. Rent bike 2 days (3-arg overload) ===
+#2 | C1/Amina | BIKE-01 | 2d | subtotal 400 - discount 0 = total 400 EGP | Active
+Counter: 2  (expected 2)
+
+=== 5. Rejections while the car is Active ===
+[REJECTED] Rent car again while Active
+           InvalidOperationException: Vehicle 'CAR-01' is not available: it has an Active rental.
+           state unchanged -> rentals=2, counter=2, availability=[CAR-01=rented, BIKE-01=rented]
+[REJECTED] Rent unknown registration
+           InvalidOperationException: No vehicle is registered with registration 'NOPE-99'.
+           state unchanged -> rentals=2, counter=2, availability=[CAR-01=rented, BIKE-01=rented]
+[REJECTED] Add duplicate ' car-01 '
+           InvalidOperationException: A vehicle with registration 'car-01' is already registered.
+           state unchanged -> rentals=2, counter=2, availability=[CAR-01=rented, BIKE-01=rented]
+[REJECTED] Return unknown rental ID 999
+           InvalidOperationException: No rental exists with ID 999.
+           state unchanged -> rentals=2, counter=2, availability=[CAR-01=rented, BIKE-01=rented]
+
+=== 6. Return the first rental ===
+Rental #1 is Returned; car available: True
+Counter: 2  (still 2)
+[REJECTED] Return the same rental again
+           InvalidOperationException: Rental 1 has already been returned.
+           state unchanged -> rentals=2, counter=2, availability=[CAR-01=available, BIKE-01=rented]
+
+=== 7. Rejections while the car is available ===
+[REJECTED] Rent for 0 days
+           ArgumentOutOfRangeException: Days must be positive. (Parameter 'days')
+           state unchanged -> rentals=2, counter=2, availability=[CAR-01=available, BIKE-01=rented]
+[REJECTED] Rent for -2 days
+           ArgumentOutOfRangeException: Days must be positive. (Parameter 'days')
+           state unchanged -> rentals=2, counter=2, availability=[CAR-01=available, BIKE-01=rented]
+[REJECTED] Rent with discount -5
+           ArgumentOutOfRangeException: Discount must be between 0 and the subtotal (600). (Parameter 'discount')
+           state unchanged -> rentals=2, counter=2, availability=[CAR-01=available, BIKE-01=rented]
+[REJECTED] Rent with discount 700 (quote is 600)
+           ArgumentOutOfRangeException: Discount must be between 0 and the subtotal (600). (Parameter 'discount')
+           state unchanged -> rentals=2, counter=2, availability=[CAR-01=available, BIKE-01=rented]
+Car still available: True
+Counter: 2  (still 2)
+
+=== 8. Rent car 1 day, no discount ===
+#3 | C1/Amina | CAR-01 | 1d | subtotal 600 - discount 0 = total 600 EGP | Active
+Counter: 3  (expected 3)
+
+=== 9. All rentals ===
+#1 | C1/Amina | CAR-01 | 3d | subtotal 1,600 - discount 100 = total 1,500 EGP | Returned
+#2 | C1/Amina | BIKE-01 | 2d | subtotal 400 - discount 0 = total 400 EGP | Active
+#3 | C1/Amina | CAR-01 | 1d | subtotal 600 - discount 0 = total 600 EGP | Active
+Sum of original totals: 2,500 EGP  (expected 2,500)
+
+=== 10. Prediction experiment (new vs override) ===
+Car
+Vehicle
+Vehicle
+Car | CAR-01: Toyota City
+1600
+Counter: 3  (unchanged, still 3)
